@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/strings.dart';
 import '../providers/task_provider.dart';
 
-/// Displays two chips showing the pending and completed task counts.
+/// Displays pending/completed counts, real streak count, and a clear progress bar.
 class TaskSummary extends StatelessWidget {
   const TaskSummary({super.key});
 
@@ -12,22 +13,73 @@ class TaskSummary extends StatelessWidget {
 
     return Consumer<TaskProvider>(
       builder: (context, provider, _) {
+        final pending = provider.pendingCount;
+        final completed = provider.completedCount;
+        final streak = provider.streakCount;
+        final progress = provider.progressPercentage;
+
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Row(
+          padding: const EdgeInsetsDirectional.fromSTEB(16.0, 4.0, 16.0, 10.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              _SummaryChip(
-                icon: Icons.hourglass_empty_rounded,
-                label: '${provider.pendingCount} pending',
-                backgroundColor: colorScheme.secondaryContainer,
-                foregroundColor: colorScheme.onSecondaryContainer,
+              // Metric Badges Row
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _StatBadge(
+                      icon: Icons.hourglass_top_rounded,
+                      label: '$pending ${Strings.pending}',
+                      backgroundColor: colorScheme.secondaryContainer,
+                      foregroundColor: colorScheme.onSecondaryContainer,
+                    ),
+                    const SizedBox(width: 8),
+                    _StatBadge(
+                      icon: Icons.check_circle_outline_rounded,
+                      label: '$completed ${Strings.completed}',
+                      backgroundColor: colorScheme.tertiaryContainer,
+                      foregroundColor: colorScheme.onTertiaryContainer,
+                    ),
+                    const SizedBox(width: 8),
+                    _StatBadge(
+                      icon: Icons.local_fire_department_rounded,
+                      label: '$streak ${Strings.streakLabel}',
+                      backgroundColor: Colors.amber.withValues(alpha: 0.18),
+                      foregroundColor: Colors.orange.shade800,
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(width: 8),
-              _SummaryChip(
-                icon: Icons.check_circle_outline_rounded,
-                label: '${provider.completedCount} done',
-                backgroundColor: colorScheme.tertiaryContainer,
-                foregroundColor: colorScheme.onTertiaryContainer,
+              const SizedBox(height: 10),
+              // Progress Bar Row
+              Row(
+                children: [
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(999),
+                      child: LinearProgressIndicator(
+                        value: provider.totalCount > 0 ? (progress / 100.0) : 0.0,
+                        minHeight: 7,
+                        backgroundColor: colorScheme.surfaceContainerHighest,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          progress == 100 && provider.totalCount > 0
+                              ? Colors.green.shade600
+                              : colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    '%$progress',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -37,8 +89,8 @@ class TaskSummary extends StatelessWidget {
   }
 }
 
-class _SummaryChip extends StatelessWidget {
-  const _SummaryChip({
+class _StatBadge extends StatelessWidget {
+  const _StatBadge({
     required this.icon,
     required this.label,
     required this.backgroundColor,
@@ -52,19 +104,27 @@ class _SummaryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Chip(
-      avatar: Icon(icon, size: 16, color: foregroundColor),
-      label: Text(
-        label,
-        style: TextStyle(
-          color: foregroundColor,
-          fontWeight: FontWeight.w600,
-          fontSize: 13,
-        ),
+    return Container(
+      padding: const EdgeInsetsDirectional.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(16),
       ),
-      backgroundColor: backgroundColor,
-      side: BorderSide.none,
-      visualDensity: VisualDensity.compact,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: foregroundColor),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: TextStyle(
+              color: foregroundColor,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
