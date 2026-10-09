@@ -564,7 +564,7 @@ class _TaskDetailsSheetState extends State<_TaskDetailsSheet> {
                 const SizedBox(width: 8),
                 FilledButton.tonal(
                   onPressed: () => _handleAddSubtask(context),
-                  style: FilledButton.tonalStyleFrom(
+                  style: FilledButton.styleFrom(
                     visualDensity: VisualDensity.compact,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
